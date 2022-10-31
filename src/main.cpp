@@ -63,17 +63,39 @@ void OnMouseMotion(int x, int y) {
   CURR_MOUSE_X_POS = x;
   CURR_MOUSE_Y_POS = y;
 
-  YZ_ANGLE += (CURR_MOUSE_Y_POS - PREV_MOUSE_Y_POS) / WINDOW_WIDTH;
+  YZ_ANGLE += (CURR_MOUSE_Y_POS - PREV_MOUSE_Y_POS) / WINDOW_HEIGHT;
+  ZX_ANGLE += (CURR_MOUSE_X_POS - PREV_MOUSE_X_POS) / WINDOW_WIDTH;
 
-  if (YZ_ANGLE > M_PI * 2) YZ_ANGLE = 0;
+  if (YZ_ANGLE > M_PI) {
+    YZ_ANGLE = M_PI;
+  }
+
+  if (YZ_ANGLE < 0) {
+    YZ_ANGLE = 0;
+  }
+
+  if (ZX_ANGLE > M_PI * 2) {
+    ZX_ANGLE = 0;
+  }
+
+  if (ZX_ANGLE < -M_PI * 2) {
+    ZX_ANGLE *= -1;
+  }
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-1, 1, -1, 1, 2, 20);
 
   double a = cos(YZ_ANGLE);
-  gluLookAt(0, RADIUS * sin(YZ_ANGLE), RADIUS * cos(YZ_ANGLE), 0, 0, 0, 0,
-            1 * (a > 0) ? 1 : ((a < 0) ? -1 : 0), 0);
+
+  gluLookAt(0, 2, 5, 0, 0, 0, 0, 1, 0);
+  // gluLookAt(RADIUS * sin(M_PI - YZ_ANGLE) * cos(ZX_ANGLE),
+  //           RADIUS * sin(M_PI - YZ_ANGLE) * sin(ZX_ANGLE),
+  //           RADIUS * cos(M_PI - YZ_ANGLE), 0, 0, 0, 0, 1, 0);
+  gluLookAt(RADIUS * sin(YZ_ANGLE) * sin(ZX_ANGLE), RADIUS * cos(YZ_ANGLE),
+            RADIUS * sin(YZ_ANGLE) * cos(ZX_ANGLE), 0, 0, 0, 0, 1, 0);
+
+  // printf("%f, %f\n", RADIUS * cos(YZ_ANGLE), RADIUS * sin(YZ_ANGLE));
 
   glMatrixMode(GL_MODELVIEW);
 }
