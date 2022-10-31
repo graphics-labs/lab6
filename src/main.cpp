@@ -3,7 +3,7 @@
 #include <GL/glut.h>
 #include <math.h>
 
-#define WINDOW_HEIGHT 800
+#define WINDOW_HEIGHT 400
 #define WINDOW_WIDTH 800
 
 double RADIUS = 10;
@@ -41,7 +41,6 @@ int main(int argc, char **argv) {
   glutSpecialFunc(OnKeyboard);
 
   glutDisplayFunc(display);
-  glutPostRedisplay();
   glutIdleFunc(display);
   glutReshapeFunc(resize);
 
@@ -57,18 +56,17 @@ void init() {
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glFrustum(-1, 1, -1, 1, 2, 20);
-  setCameraPosition();
-  glMatrixMode(GL_MODELVIEW);
 }
 
 void resize(int width, int height) {}
 
 void setCameraPosition() {
   double a = cos(YZ_ANGLE);
-  gluLookAt(getXEye(), getYEye(), getZEye(), 0, 0, 0, 0, YZ_ANGLE < 0 ? -1 : 1, 0);
+  gluLookAt(
+    getXEye(), getYEye(), getZEye(),
+    0, 0, 0,
+    0, YZ_ANGLE < 0 || YZ_ANGLE > M_PI ? -1 : 1, 0
+  );
 }
 
 double getXEye() { return RADIUS * sin(YZ_ANGLE) * sin(ZX_ANGLE); }
@@ -109,14 +107,6 @@ void OnKeyboard(int key, int x, int y) {
   if (ZX_ANGLE < -M_PI * 2) {
     ZX_ANGLE = -1;
   }
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  glFrustum(-1, 1, -1, 1, 2, 20);
-  setCameraPosition();
-
-  glMatrixMode(GL_MODELVIEW);
 }
 
 void polygon(int a, int b, int c, int d) {
@@ -143,6 +133,28 @@ void colorcube() {
 
 void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glViewport(0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-3, 3, -3, 3, 2, 20);
+    
+
+  setCameraPosition();
+  glMatrixMode(GL_MODELVIEW);
+
   colorcube();
+
+  glViewport(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glFrustum(-1, 1, -1, 1, 2, 20);
+  setCameraPosition();
+  glMatrixMode(GL_MODELVIEW);
+
+  colorcube();
+
   glutSwapBuffers();
 }
