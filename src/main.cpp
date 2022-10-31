@@ -12,7 +12,7 @@ GLdouble CAMERA_X, CAMERA_Y, CAMERA_Z;
 
 double RADIUS = 10;
 
-double YZ_ANGLE = 0;
+double YZ_ANGLE = M_PI / 4;
 double ZX_ANGLE = 0;
 
 int TEMP = 0;
@@ -57,6 +57,18 @@ void OnMouse(int button, int state, int x, int y) {
   TEMP += 2;
 }
 
+double getXEye() { return RADIUS * sin(YZ_ANGLE) * sin(ZX_ANGLE); }
+
+double getYEye() { return RADIUS * cos(YZ_ANGLE); }
+
+double getZEye() { return RADIUS * sin(YZ_ANGLE) * cos(ZX_ANGLE); }
+
+void setCameraPosition() {
+  double a = cos(YZ_ANGLE);
+  gluLookAt(getXEye(), getYEye(), getZEye(), 0, 0, 0, 0, YZ_ANGLE < 0 ? -1 : 1,
+            0);
+}
+
 void OnMouseMotion(int x, int y) {
   PREV_MOUSE_X_POS = CURR_MOUSE_X_POS;
   PREV_MOUSE_Y_POS = CURR_MOUSE_Y_POS;
@@ -67,11 +79,11 @@ void OnMouseMotion(int x, int y) {
   ZX_ANGLE += (CURR_MOUSE_X_POS - PREV_MOUSE_X_POS) / WINDOW_WIDTH;
 
   if (YZ_ANGLE > M_PI) {
-    YZ_ANGLE = M_PI;
+    YZ_ANGLE = -M_PI;
   }
 
-  if (YZ_ANGLE < 0) {
-    YZ_ANGLE = 0;
+  if (YZ_ANGLE < -M_PI) {
+    YZ_ANGLE = M_PI;
   }
 
   if (ZX_ANGLE > M_PI * 2) {
@@ -79,21 +91,16 @@ void OnMouseMotion(int x, int y) {
   }
 
   if (ZX_ANGLE < -M_PI * 2) {
-    ZX_ANGLE *= -1;
+    ZX_ANGLE = -1;
   }
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-1, 1, -1, 1, 2, 20);
 
-  double a = cos(YZ_ANGLE);
+  setCameraPosition();
 
-  gluLookAt(0, 2, 5, 0, 0, 0, 0, 1, 0);
-  // gluLookAt(RADIUS * sin(M_PI - YZ_ANGLE) * cos(ZX_ANGLE),
-  //           RADIUS * sin(M_PI - YZ_ANGLE) * sin(ZX_ANGLE),
-  //           RADIUS * cos(M_PI - YZ_ANGLE), 0, 0, 0, 0, 1, 0);
-  gluLookAt(RADIUS * sin(YZ_ANGLE) * sin(ZX_ANGLE), RADIUS * cos(YZ_ANGLE),
-            RADIUS * sin(YZ_ANGLE) * cos(ZX_ANGLE), 0, 0, 0, 0, 1, 0);
+  printf("%f\n", YZ_ANGLE);
 
   // printf("%f, %f\n", RADIUS * cos(YZ_ANGLE), RADIUS * sin(YZ_ANGLE));
 
@@ -110,7 +117,9 @@ void init() {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-1, 1, -1, 1, 2, 20);
-  gluLookAt(RADIUS, RADIUS, RADIUS, 0, 0, 0, 0, 1, 0);
+
+  setCameraPosition();
+
   glMatrixMode(GL_MODELVIEW);
 }
 
