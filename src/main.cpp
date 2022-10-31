@@ -1,22 +1,81 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include <math.h>
+#include <stdio.h>
+
+#define WINDOW_HEIGHT 800
+#define WINDOW_WIDTH 800
+
+bool IS_LEFT_BTN_PRESSED = false;
+GLdouble CAMERA_X, CAMERA_Y, CAMERA_Z;
+
+double RADIUS = 10;
+
+double YZ_ANGLE = 0;
+double ZX_ANGLE = 0;
+
+int TEMP = 0;
+
+double PREV_MOUSE_X_POS, PREV_MOUSE_Y_POS;
+double CURR_MOUSE_X_POS, CURR_MOUSE_Y_POS;
 
 void init();
 void resize(int width, int height);
-void display(); // отрисовка всего поля
+void display();  // отрисовка всего поля
+void OnMouse(int, int, int, int);
+void OnMouseMotion(int, int);
 
 int main(int argc, char **argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowPosition(50, 10);
-  glutInitWindowSize(800, 800);
-  glutCreateWindow("Lab2");
-  glutReshapeFunc(resize);
-  init();
+  glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+  glutCreateWindow("Lab4");
+
+  glutMouseFunc(OnMouse);
+  glutMotionFunc(OnMouseMotion);
+
   glutDisplayFunc(display);
+  glutPostRedisplay();
+  glutIdleFunc(display);
+
+  glutReshapeFunc(resize);
+
+  init();
+
   glutMainLoop();
   return 0;
+}
+
+void OnMouse(int button, int state, int x, int y) {
+  IS_LEFT_BTN_PRESSED = state == GLUT_LEFT_BUTTON;
+
+  CURR_MOUSE_X_POS = PREV_MOUSE_X_POS = x;
+  CURR_MOUSE_Y_POS = PREV_MOUSE_Y_POS = y;
+
+  TEMP += 2;
+}
+
+void OnMouseMotion(int x, int y) {
+  PREV_MOUSE_X_POS = CURR_MOUSE_X_POS;
+  PREV_MOUSE_Y_POS = CURR_MOUSE_Y_POS;
+  CURR_MOUSE_X_POS = x;
+  CURR_MOUSE_Y_POS = y;
+
+  YZ_ANGLE += (CURR_MOUSE_Y_POS - PREV_MOUSE_Y_POS) / WINDOW_WIDTH;
+
+  if (YZ_ANGLE > M_PI * 2) YZ_ANGLE = 0;
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glFrustum(-1, 1, -1, 1, 2, 20);
+
+  double a = cos(YZ_ANGLE);
+  gluLookAt(0, RADIUS * sin(YZ_ANGLE), RADIUS * cos(YZ_ANGLE), 0, 0, 0, 0,
+            1 * (a > 0) ? 1 : ((a < 0) ? -1 : 0), 0);
+
+  glMatrixMode(GL_MODELVIEW);
 }
 
 void init() {
@@ -28,9 +87,8 @@ void init() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-1, 1, -1, 1, 2, 12);
-  gluLookAt(5, 5, 10, 0, 0, 0, 0, 1, 0);
-  // gluLookAt(10, 10, 10, 0, 0, 0, 0, 1, 0);
+  glFrustum(-1, 1, -1, 1, 2, 20);
+  gluLookAt(RADIUS, RADIUS, RADIUS, 0, 0, 0, 0, 1, 0);
   glMatrixMode(GL_MODELVIEW);
 }
 
@@ -66,6 +124,11 @@ void colorcube() {
 }
 
 void display() {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   colorcube();
-  glFlush();
+
+  // glPopMatrix();
+
+  glutSwapBuffers();
 }
