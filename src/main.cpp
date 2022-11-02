@@ -2,36 +2,46 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
+#include <string.h>
 
-#define WINDOW_HEIGHT 400
-#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 800
+#define WINDOW_WIDTH 2 * WINDOW_HEIGHT
 
 double RADIUS = 10;
 double YZ_ANGLE = M_PI / 4;
-double ZX_ANGLE = 0;
+double ZX_ANGLE = M_PI / 6;
 
-GLfloat VERTICES[][3] = {{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, 
-                         {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0},  {1.0, -1.0, 1.0},  
-                         {1.0, 1.0, 1.0},  {-1.0, 1.0, 1.0}};
+GLfloat VERTICES[][3] = {
+    {-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0},
+    {-1.0, -1.0, 1.0},  {1.0, -1.0, 1.0},  {1.0, 1.0, 1.0},  {-1.0, 1.0, 1.0}};
 
-GLfloat COLORS[][3] = {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 1.0, 0.0},
-                       {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 1.0},
-                       {1.0, 1.0, 1.0}, {0.0, 1.0, 1.0}};
+GLfloat COLORS[][3] = {{0.78, 0.12, 0.0}, {0.5, 0.3, 0.2},  {1.0, 0.23, 0.3},
+                       {0.4, 0.3, 0.7},   {0.79, 0.4, 1.0}, {0.0, 0.5, 0.9}};
 
 void init();
 void resize(int, int);
 void display();
 void resize(int, int);
 
-double getXEye();
+void Map();
+void Task1();
+void Task2();
 
+// void drawString(double x, double y, char* string) {
+//   glRasterPos2d(x - strlen(string) * 5, y);
+//   for (char* c = string; *c != '\0'; c++) {
+//     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+//   }
+// }
+
+double getXEye();
 double getYEye();
 double getZEye();
 
 void setCameraPosition();
 void OnKeyboard(int, int, int);
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowPosition(50, 10);
@@ -54,6 +64,7 @@ void init() {
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
+  glShadeModel(GL_FLAT);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -62,11 +73,8 @@ void resize(int width, int height) {}
 
 void setCameraPosition() {
   double a = cos(YZ_ANGLE);
-  gluLookAt(
-    getXEye(), getYEye(), getZEye(),
-    0, 0, 0,
-    0, YZ_ANGLE < 0 || YZ_ANGLE > M_PI ? -1 : 1, 0
-  );
+  gluLookAt(getXEye(), getYEye(), getZEye(), 0, 0, 0, 0,
+            YZ_ANGLE < 0 || YZ_ANGLE > M_PI ? -1 : 1, 0);
 }
 
 double getXEye() { return RADIUS * sin(YZ_ANGLE) * sin(ZX_ANGLE); }
@@ -100,52 +108,98 @@ void OnKeyboard(int key, int x, int y) {
     YZ_ANGLE = M_PI;
   }
 
+  if (YZ_ANGLE == 0) {
+    YZ_ANGLE -= 0.001;
+  }
+
   if (ZX_ANGLE > M_PI * 2) {
-    ZX_ANGLE = 0;
+    ZX_ANGLE -= M_PI * 2;
   }
 
   if (ZX_ANGLE < -M_PI * 2) {
-    ZX_ANGLE = -1;
+    ZX_ANGLE *= -1;
   }
 }
 
-void polygon(int a, int b, int c, int d) {
+void polygon(int a, int b, int c, int d, int color) {
+  glColor3fv(COLORS[color]);
+
   glBegin(GL_POLYGON);
-  glColor3fv(COLORS[a]);
+
   glVertex3fv(VERTICES[a]);
-  glColor3fv(COLORS[b]);
+
   glVertex3fv(VERTICES[b]);
-  glColor3fv(COLORS[c]);
+
   glVertex3fv(VERTICES[c]);
-  glColor3fv(COLORS[d]);
+
   glVertex3fv(VERTICES[d]);
+
   glEnd();
 }
 
 void colorcube() {
-  polygon(0, 3, 2, 1);
-  polygon(2, 3, 7, 6);
-  polygon(0, 4, 7, 3);
-  polygon(1, 2, 6, 5);
-  polygon(4, 5, 6, 7);
-  polygon(0, 1, 5, 4);
+  polygon(0, 3, 2, 1, 0);
+  polygon(2, 3, 7, 6, 1);
+  polygon(0, 4, 7, 3, 2);
+  polygon(1, 2, 6, 5, 3);
+  polygon(4, 5, 6, 7, 4);
+  polygon(0, 1, 5, 4, 5);
 }
 
-void display() {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void Task1() {
+  // левый верхний
 
-  glViewport(0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
-
+  glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 2);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-3, 3, -3, 3, 2, 20);
-    
+  gluLookAt(RADIUS, 0, 0, 0, 0, 0, 0, 1, 0);
+  glMatrixMode(GL_MODELVIEW);
+  colorcube();
 
-  setCameraPosition();
+  //
+
+  // правый верхний
+
+  glViewport(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 4,
+             WINDOW_HEIGHT / 2);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-3, 3, -3, 3, 2, 20);
+  gluLookAt(RADIUS, RADIUS, RADIUS, 0, 0, 0, 0, 1, 0);
+  glMatrixMode(GL_MODELVIEW);
+  colorcube();
+
+  // левый нижний
+
+  glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 2);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-3, 3, -3, 3, 2, 20);
+  gluLookAt(0, 0, RADIUS, 0, 0, 0, 0, 1, 0);
+  glRotated(20.705, 1, 0, 0);
+  glRotated(22.208, 0, 1, 0);
+  // glRotated(-45, 1, 0, 0);
+  // glRotated(35.3, 0, 1, 0);
+
   glMatrixMode(GL_MODELVIEW);
 
   colorcube();
 
+  // правый нижний
+
+  glViewport(WINDOW_WIDTH / 4, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 2);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glFrustum(-1, 1, -1, 1, 6, 35);
+
+  gluLookAt(RADIUS, RADIUS, RADIUS, 0, 0, 0, 0, 1, 0);
+  gluPerspective(0, 0, 1, 2);
+  glMatrixMode(GL_MODELVIEW);
+  colorcube();
+}
+
+void Task2() {
   glViewport(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
 
   glMatrixMode(GL_PROJECTION);
@@ -157,4 +211,22 @@ void display() {
   colorcube();
 
   glutSwapBuffers();
+}
+
+// void Map() {
+//   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+//   glBegin(GL_LINE);
+//   glColor3d(0.5, 0.5, 0.5);
+//   glVertex2d(WINDOW_WIDTH / 2, 0);
+//   glVertex2d(WINDOW_WIDTH / 2, WINDOW_HEIGHT);
+//   glEnd();
+// }
+
+void display() {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Map();
+  Task1();
+  Task2();
 }
