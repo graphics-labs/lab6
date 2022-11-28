@@ -16,6 +16,8 @@ all: $(OBJECTS)
 
 rebuild: clean all
 
+re: rebuild
+
 %.o: %.cpp
 	$(CC) $(CFLAGS) $< -o $(BUILD_PATH)$@
 
