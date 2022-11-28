@@ -21,16 +21,8 @@ void resize(int, int);
 void display();
 void resize(int, int);
 
-void Map();
 void Task1();
 void Task2();
-
-// void drawString(double x, double y, char* string) {
-//   glRasterPos2d(x - strlen(string) * 5, y);
-//   for (char* c = string; *c != '\0'; c++) {
-//     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-//   }
-// }
 
 double getXEye();
 double getYEye();
@@ -228,22 +220,10 @@ void Task2()
   glutSwapBuffers();
 }
 
-void Map()
-{
-  glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-  glBegin(GL_LINE);
-  glColor3d(0.5, 0.5, 0.5);
-  glVertex2d(WINDOW_WIDTH / 2, 0);
-  glVertex2d(WINDOW_WIDTH / 2, WINDOW_HEIGHT);
-  glEnd();
-}
-
 void display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  Map();
   Task1();
   Task2();
 }
